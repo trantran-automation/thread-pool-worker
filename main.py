@@ -1,16 +1,22 @@
-# thread-pool-worker
-An example about thread pool to increase process speed
+import concurrent.futures as _cf
+import queue
+import threading
+import time
+import random
 
-# How it work
-This processor use input queue and output queue to in and out job
-```python
 MAX_WORKER:int = 10
 input_queue = queue.Queue()
 output_queue = queue.Queue()
-```
 
-This function use to commit job to thread pool and add watch dog to check for timeout, exception, return result
-```python
+
+def worker(job):
+    # fake fail exception in code
+    if random.uniform(0,1) < 0.2:
+        raise ValueError("Fake crash")
+    time.sleep(random.uniform(0.2,10))
+    return job
+
+
 def dispatcher():
     """
         Process task with thread pool
@@ -40,20 +46,7 @@ def dispatcher():
             except queue.Empty:
                 # just pass if queue input timeout
                 pass
-```
 
-Worker processor where real process happen for data here is only a fake process, change it with your real process, real data
-```python
-def worker(job):
-    # fake fail exception in code
-    if random.uniform(0,1) < 0.2:
-        raise ValueError("Fake crash")
-    time.sleep(random.uniform(0.2,10))
-    return job
-```
-
-In main run all thread as daemon, use input value with your real data. 1 thread for data input, 1 thead for data out put, 1 thread to run dispatcher.
-```python
 def main():
     def job_send():
         while True:
@@ -80,4 +73,5 @@ def main():
     
     print("END")
 
-```
+if __name__ == "__main__":
+    main()
