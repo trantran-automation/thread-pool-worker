@@ -13,7 +13,7 @@ def worker(job):
     # fake fail exception in code
     if random.uniform(0,1) < 0.2:
         raise ValueError("Fake crash")
-    time.sleep(random.uniform(0.2,10))
+    time.sleep(random.uniform(10,20))
     return job
 
 
@@ -21,10 +21,10 @@ def dispatcher():
     """
         Process task with thread pool
     """
+    
+    # main loop of pool handle that keep take new job and push 
+    # to thread pool
     with _cf.ThreadPoolExecutor(max_workers=MAX_WORKER) as thread_pool:
-        processing_worker = {} # store running worker handler
-        # main loop of pool handle that keep take new job and push 
-        # to thread pool
         while True:
             try:
                 job = input_queue.get(timeout=1)
@@ -33,7 +33,7 @@ def dispatcher():
                 # new watch dog run to monitor timeout exception for each thread
                 def watchdog():
                     try:
-                        result = future.result(timeout=5.0)
+                        result = future.result(timeout=15.0)
                         output_queue.put( (result,'OK' ) )
                     except _cf.TimeoutError:
                         future.cancel()
@@ -52,8 +52,8 @@ def main():
         while True:
             # simulator task task assignment
             input_queue.put("simulate data")
-            time.sleep(1)
-
+            print("buffer size:",input_queue.qsize())
+            time.sleep(0.001)
     def result_take():
         while True:
             try:
